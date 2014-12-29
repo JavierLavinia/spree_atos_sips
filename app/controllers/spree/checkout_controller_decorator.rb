@@ -15,7 +15,7 @@ module Spree
         )
         .request(
           :merchant_id            => gateway.preferred_merchant_id,
-          :amount                 => (@order.total.to_f*100).to_i,
+          :amount                 => (@order.total*100).to_i,
           :customer_id            => (current_user ? current_user.id : 0),
           :order_id               => @order.id,
           :automatic_response_url => "#{base_url}/atos/atos_auto_response",

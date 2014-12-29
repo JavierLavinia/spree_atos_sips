@@ -65,7 +65,7 @@ module Spree
         @atos_account = Spree::AtosSipsAccount.find_or_create_by_customer_id_and_payment_means_and_card_number(
           @response_array[:customer_id],@response_array[:payment_means],@response_array[:card_number])
         @payment = @order.payments.create(
-          :amount => (@response_array[:amount].to_f/100.0),
+          :amount => (@response_array[:amount]/100.0).to_f,
           :source => @atos_account,
           :source_type => 'Spree::AtosSipsAccount',
           :payment_method_id => @payment_method.id,
@@ -79,7 +79,7 @@ module Spree
       end
       
       def amounts_match?
-        @order.present? && (@order.total.to_f*100).to_i == @response_array[:amount].to_i
+        @order.present? && (@order.total*100).to_i == @response_array[:amount].to_i
       end
       
       def order_completed!
