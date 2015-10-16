@@ -58,7 +58,12 @@ module Spree
       end
   
       def restore_session
-        sign_in Spree::User.find(@response_array[:customer_id])
+        begin
+          sign_in Spree::User.find(@response_array[:customer_id]) unless @response_array[:customer_id].zero?
+        rescue Exception => e
+          logger.error("#{e.class.name}: #{e.message}")
+          logger.error(e.backtrace * "\n")
+        end
       end
   
       def create_payment
