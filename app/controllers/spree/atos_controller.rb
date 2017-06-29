@@ -40,7 +40,20 @@ module Spree
   
     def atos_auto_response
       # Si le paiement a été effectué
-      order_completed! if transaction_approved? and amounts_match?
+      notification_log = Spree::AtosNotification.create({
+                            order_id: @order.try(:id),
+                            order_amount: @order.try(:total),
+                            atos_amount: (@response_array[:amount].to_f / 100),
+                            atos_response_code: @response_array[:response_code],
+                            atos_parameters: @response_array.to_yaml
+                          })
+      begin
+        order_completed! if transaction_approved? and amounts_match?
+      rescue Exception => ex
+        notification_log.update_attributes({server_error: ex.backtrace})
+        raise
+      end
+
       render :nothing => true
     end
   
