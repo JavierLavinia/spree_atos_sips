@@ -8,11 +8,25 @@ module Spree
     respond_to :html
   
     def atos_confirm
+      notification_log = Spree::AtosNotification.create({
+                           order_id: @order.try(:id),
+                           order_amount: @order.try(:total),
+                           atos_amount: (@response_array[:amount].to_f / 100),
+                           atos_response_code: @response_array[:response_code],
+                           atos_parameters: @response_array.to_yaml
+                         })
+
       # Si le paiement a été effectué
       if transaction_approved?
         # Si la commande existe et que le montant dû est égal au montant payé
         if amounts_match?
-          order_completed!
+          begin
+            order_completed!
+          rescue Exception => ex
+            notification_log.update_attributes({server_error: ex.backtrace})
+            raise
+          end
+
           session[:order_id] = nil
           flash[:notice] = I18n.t(:order_processed_successfully).html_safe
           flash[:commerce_tracking] = 'nothing special'
